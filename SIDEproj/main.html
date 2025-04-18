@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Spam Filter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #check-message-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .regex-result {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 6px;
+    }
+    .match { background-color: #ffe6e6; color: #a00; }
+    .no-match { background-color: #e6ffe6; color: #060; }
+    #result { font-weight: bold; margin-top: 20px; font-size: 18px; }
+  </style>
+</head>
+<body>
+
+  <h2>Interactive Spam Filter</h2>
+  <textarea id="message-input" placeholder="Enter your message here..."></textarea>
+  <button id="check-message-btn">Check Message</button>
+
+  <div id="regex-results"></div>
+  <div id="result"></div>
+
+  <script>
+    const messageInput = document.getElementById("message-input");
+    const result = document.getElementById("result");
+    const regexResults = document.getElementById("regex-results");
+    const checkMessageButton = document.getElementById("check-message-btn");
+
+    const helpRegex = /please help|assist me|mentor me/i;
+    const dollarRegex = /[0-9]+\s*(?:hundred|thousand|grand|million|billion|zillion|bazillion|crypto|bitcoin|ethereum|coin)?\s+dollars/i;
+    const freeRegex = /(?:^|\s)fr[e3][e3] m[o0]n[e3]y(?:$|\s)/i;
+    const stockRegex = /(?:^|\s)[s5][t7][o0][c{[(]k [a@4]l[e3]r[t7](?:$|\s)/i;
+    const dearRegex = /(?:\s|^)d[e3][a@4]r fr[i1|][e3]nd(?:\s|$)/i;
+
+    const denyList = [
+      { name: "Help Request", regex: helpRegex },
+      { name: "Suspicious Dollar Amount", regex: dollarRegex },
+      { name: "Free Money Phrase", regex: freeRegex },
+      { name: "Stock Alert", regex: stockRegex },
+      { name: "Dear Friend Phrase", regex: dearRegex }
+    ];
+
+    const isSpam = (msg) => denyList.some((entry) => entry.regex.test(msg));
+
+    checkMessageButton.addEventListener("click", () => {
+      const msg = messageInput.value.trim();
+      if (!msg) {
+        alert("Please enter a message.");
+        return;
+      }
+
+      regexResults.innerHTML = ""; // clear previous results
+
+      let spamDetected = false;
+
+      denyList.forEach(({ name, regex }) => {
+        const matched = regex.test(msg);
+        const div = document.createElement("div");
+        div.className = `regex-result ${matched ? "match" : "no-match"}`;
+        div.textContent = `${name}: ${matched ? "Matched!" : "No match"}`;
+        regexResults.appendChild(div);
+        if (matched) spamDetected = true;
+      });
+
+      result.textContent = spamDetected
+        ? "🚨 Oh no! This looks like a spam message."
+        : "✅ This message does not seem to contain any spam.";
+
+      messageInput.value = "";
+    });
+  </script>
+
+</body>
+</html>
